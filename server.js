@@ -12,7 +12,9 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static('public'));
 
-mongoose.connect('mongodb://127.0.0.1:27017/umoja');
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log("MongoDB connecté"))
+  .catch(err => console.log("Erreur MongoDB :", err));
 
 // INSCRIPTION
 app.post('/register', async (req,res)=>{
