@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>UMOJA TASKS</title>
+
+<style>
+body{
+    background:#0f0f0f;
+    color:white;
+    font-family:Arial;
+    text-align:center;
+}
+
+.container{
+    padding:20px;
+}
+
+.card{
+    background:#1c1c1c;
+    padding:15px;
+    margin:10px;
+    border-radius:10px;
+}
+
+input{
+    width:80%;
+    padding:10px;
+    margin:5px;
+}
+
+button{
+    padding:12px;
+    margin:10px;
+    background:#00ff88;
+    border:none;
+    border-radius:8px;
+    width:80%;
+}
+
+.balance{
+    font-size:25px;
+    color:#00ff88;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2> UMOJA TASKS</h2>
+
+<div class="card">
+<h3>Connexion / Inscription</h3>
+
+<input id="email" placeholder="Email"><br>
+<input id="password" type="password" placeholder="Mot de passe"><br>
+
+<button onclick="register()">Créer compte</button>
+<button onclick="login()">Connexion</button>
+</div>
+
+<div class="card">
+<h3>Solde</h3>
+<div class="balance" id="balance">0 FC</div>
+<button onclick="getUser()">Actualiser</button>
+</div>
+
+<div class="card">
+<h3>Tâches</h3>
+<button onclick="watch()">🎥 Regarder vidéo (+2500 FC)</button>
+</div>
+
+<div class="card">
+<h3>Retrait</h3>
+<input id="amount" placeholder="Montant (ex: 50000)">
+<button onclick="withdraw()">Retirer</button>
+</div>
+
+</div>
+
+<script>
+
+let token = "";
+
+// INSCRIPTION
+async function register(){
+    let res = await fetch('/register',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+            email:email.value,
+            password:password.value
+        })
+    });
+
+    let data = await res.json();
+    alert(data.message || data.error);
+}
+
+// LOGIN
+async function login(){
+    let res = await fetch('/login',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+            email:email.value,
+            password:password.value
+        })
+    });
+
+    let data = await res.json();
+
+    if(data.error){
+        alert(data.error);
+        return;
+    }
+
+    token = data.token;
+    alert("Connecté !");
+    getUser();
+}
+
+// VOIR SOLDE
+async function getUser(){
+    let res = await fetch('/me',{
+        headers:{'Authorization':token}
+    });
+
+    let user = await res.json();
+    balance.innerText = user.balance + " FC";
+}
+
+// TÂCHE VIDÉO
+async function watch(){
+    let res = await fetch('/task/video',{
+        method:'POST',
+        headers:{'Authorization':token}
+    });
+
+    let data = await res.json();
+
+    if(data.error){
+        alert(data.error);
+        return;
+    }
+
+    balance.innerText = data.balance + " FC";
+}
+
+// RETRAIT
+async function withdraw(){
+    let res = await fetch('/withdraw',{
+        method:'POST',
+        headers:{
+            'Authorization':token,
+            'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+            amount: Number(amount.value)
+        })
+    });
+
+    let data = await res.json();
+    alert(data.message || data.error);
+}
+
+</script>
+
+</body>
+</html>
